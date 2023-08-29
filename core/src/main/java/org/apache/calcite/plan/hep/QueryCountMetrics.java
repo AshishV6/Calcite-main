@@ -16,4 +16,6 @@
  */
 
 package org.apache.calcite.plan.hep;public class QueryCountMetrics {
+    public static void hep() {
+    }
 }
