@@ -21,6 +21,8 @@ import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 
+import org.apache.calcite.rex.RexBuilderPlus;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.HashMap;
@@ -96,7 +98,7 @@ public class RelOptQuery {
   @Deprecated // to be removed before 2.0
   public RelOptCluster createCluster(
       RelDataTypeFactory typeFactory,
-      RexBuilder rexBuilder) {
+      RexBuilderPlus rexBuilder) {
     return new RelOptCluster(planner, typeFactory, rexBuilder, nextCorrel,
         mapCorrelToRel);
   }

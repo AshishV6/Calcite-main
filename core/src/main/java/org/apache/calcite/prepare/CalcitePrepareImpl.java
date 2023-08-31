@@ -72,11 +72,7 @@ import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexExecutorImpl;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexProgram;
+import org.apache.calcite.rex.*;
 import org.apache.calcite.runtime.Bindable;
 import org.apache.calcite.runtime.Hook;
 import org.apache.calcite.runtime.Typed;
@@ -231,7 +227,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
     final CalcitePreparingStmt preparingStmt =
         new CalcitePreparingStmt(this, context, catalogReader, typeFactory,
             context.getRootSchema(), null,
-            createCluster(planner, new RexBuilder(typeFactory)),
+            createCluster(planner, new RexBuilderPlus(typeFactory)),
             resultConvention, createConvertletTable());
     final SqlToRelConverter converter =
         preparingStmt.getSqlToRelConverter(validator, catalogReader, config);
@@ -405,7 +401,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
 
   /** Factory method for cluster. */
   protected RelOptCluster createCluster(RelOptPlanner planner,
-      RexBuilder rexBuilder) {
+      RexBuilderPlus rexBuilder) {
     return RelOptCluster.create(planner, rexBuilder);
   }
 
@@ -546,7 +542,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
         enableBindable ? BindableConvention.INSTANCE
             : EnumerableConvention.INSTANCE;
     return new CalcitePreparingStmt(this, context, catalogReader, typeFactory,
-            context.getRootSchema(), prefer, createCluster(planner, new RexBuilder(typeFactory)),
+            context.getRootSchema(), prefer, createCluster(planner, new RexBuilderPlus(typeFactory)),
             resultConvention, createConvertletTable());
   }
 
@@ -950,7 +946,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
             schema.path(null),
             typeFactory,
             prepareContext.config());
-    final RexBuilder rexBuilder = new RexBuilder(typeFactory);
+    final RexBuilderPlus rexBuilder = new RexBuilderPlus(typeFactory);
     final RelOptPlanner planner =
         createPlanner(prepareContext,
             config.getContext(),
@@ -968,7 +964,7 @@ public class CalcitePrepareImpl implements CalcitePrepare {
   public static class CalcitePreparingStmt extends Prepare
       implements RelOptTable.ViewExpander {
     protected final RelOptPlanner planner;
-    protected final RexBuilder rexBuilder;
+    protected final RexBuilderPlus rexBuilder;
     protected final CalcitePrepareImpl prepare;
     protected final CalciteSchema schema;
     protected final RelDataTypeFactory typeFactory;

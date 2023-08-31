@@ -33,13 +33,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Match;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexLiteral;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexProgramBuilder;
-import org.apache.calcite.rex.RexSubQuery;
-import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.rex.*;
 import org.apache.calcite.runtime.Enumerables;
 import org.apache.calcite.sql.SqlMatchFunction;
 import org.apache.calcite.util.BuiltInMethod;
@@ -182,7 +176,7 @@ public class EnumerableMatch extends Match implements EnumerableRel {
                 Expressions.call(rows_, BuiltInMethod.LIST_GET.method, i_),
                 inputPhysType.getJavaRowType())));
 
-    RexBuilder rexBuilder = new RexBuilder(implementor.getTypeFactory());
+    RexBuilderPlus rexBuilder = new RexBuilderPlus(implementor.getTypeFactory());
     RexProgramBuilder rexProgramBuilder =
         new RexProgramBuilder(inputPhysType.getRowType(), rexBuilder);
     for (Map.Entry<String, RexNode> entry : measures.entrySet()) {
@@ -301,7 +295,7 @@ public class EnumerableMatch extends Match implements EnumerableRel {
 
     for (Map.Entry<String, RexNode> entry : patternDefinitions.entrySet()) {
       // Translate REX to Expressions
-      RexBuilder rexBuilder = new RexBuilder(implementor.getTypeFactory());
+      RexBuilderPlus rexBuilder = new RexBuilderPlus(implementor.getTypeFactory());
       RexProgramBuilder rexProgramBuilder =
           new RexProgramBuilder(physType.getRowType(), rexBuilder);
 

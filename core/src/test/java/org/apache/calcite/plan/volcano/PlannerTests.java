@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * Common classes and utility methods for Volcano planner tests.
  */
-class PlannerTests {
+public class PlannerTests {
 
   private PlannerTests() {}
 
@@ -81,7 +81,7 @@ class PlannerTests {
         }
       };
 
-  static RelOptCluster newCluster(VolcanoPlanner planner) {
+  public static RelOptCluster newCluster(VolcanoPlanner planner) {
     final RelDataTypeFactory typeFactory =
         new SqlTypeFactoryImpl(org.apache.calcite.rel.type.RelDataTypeSystem.DEFAULT);
     return RelOptCluster.create(planner, new RexBuilder(typeFactory));

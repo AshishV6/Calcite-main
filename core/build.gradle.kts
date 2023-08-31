@@ -115,6 +115,10 @@ tasks.jar {
 }
 
 val generatedVersionDir = File(buildDir, "generated/sources/version")
+java {
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
+}
 val versionClass by tasks.registering(Sync::class) {
     val re = Regex("^(\\d+)\\.(\\d+).*")
 

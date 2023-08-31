@@ -175,7 +175,7 @@ public final class SortRemoveRuleTest {
             not(containsString("EnumerableSort"))));
   }
 
-  private static String toString(RelNode rel) {
+  static String toString(RelNode rel) {
     return Util.toLinux(
         RelOptUtil.dumpPlan("", rel, SqlExplainFormat.TEXT,
             SqlExplainLevel.DIGEST_ATTRIBUTES));

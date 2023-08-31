@@ -27,6 +27,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.metadata.RelMetadataQueryBase;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexBuilderPlus;
 import org.apache.calcite.rex.RexNode;
 
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
@@ -53,7 +54,7 @@ public class RelOptCluster {
   private final AtomicInteger nextCorrel;
   private final Map<String, RelNode> mapCorrelToRel;
   private RexNode originalExpression;
-  private final RexBuilder rexBuilder;
+  private final RexBuilderPlus rexBuilder;
   private RelMetadataProvider metadataProvider;
   @Deprecated // to be removed before 2.0
   private MetadataFactory metadataFactory;
@@ -72,7 +73,7 @@ public class RelOptCluster {
       RelOptQuery query,
       RelOptPlanner planner,
       RelDataTypeFactory typeFactory,
-      RexBuilder rexBuilder) {
+      RexBuilderPlus rexBuilder) {
     this(planner, typeFactory, rexBuilder, query.nextCorrel,
         query.mapCorrelToRel);
   }
@@ -83,7 +84,7 @@ public class RelOptCluster {
    * <p>For use only from {@link #create} and {@link RelOptQuery}.
    */
   RelOptCluster(RelOptPlanner planner, RelDataTypeFactory typeFactory,
-      RexBuilder rexBuilder, AtomicInteger nextCorrel,
+      RexBuilderPlus rexBuilder, AtomicInteger nextCorrel,
       Map<String, RelNode> mapCorrelToRel) {
     this.nextCorrel = nextCorrel;
     this.mapCorrelToRel = mapCorrelToRel;
@@ -102,7 +103,7 @@ public class RelOptCluster {
 
   /** Creates a cluster. */
   public static RelOptCluster create(RelOptPlanner planner,
-      RexBuilder rexBuilder) {
+      RexBuilderPlus rexBuilder) {
     return new RelOptCluster(planner, rexBuilder.getTypeFactory(),
         rexBuilder, new AtomicInteger(0), new HashMap<>());
   }
@@ -132,7 +133,7 @@ public class RelOptCluster {
     return typeFactory;
   }
 
-  public RexBuilder getRexBuilder() {
+  public RexBuilderPlus getRexBuilder() {
     return rexBuilder;
   }
 

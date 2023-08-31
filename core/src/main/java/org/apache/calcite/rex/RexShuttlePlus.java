@@ -12,9 +12,9 @@ import java.util.List;
 
 public class RexShuttlePlus extends RexShuttle {
 
-  private final RexBuilder rexBuilder;
+  private final RexBuilderPlus rexBuilder;
 
-  public RexShuttlePlus(RexBuilder rexBuilder) {
+  public RexShuttlePlus(RexBuilderPlus rexBuilder) {
     this.rexBuilder = rexBuilder;
   }
 

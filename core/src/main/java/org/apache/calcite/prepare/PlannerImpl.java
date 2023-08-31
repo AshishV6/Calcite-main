@@ -39,6 +39,7 @@ import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexBuilderPlus;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.runtime.Hook;
 import org.apache.calcite.schema.SchemaPlus;
@@ -258,7 +259,7 @@ public class PlannerImpl implements Planner, ViewExpander {
     SqlNode validatedSqlNode =
         requireNonNull(this.validatedSqlNode,
             "validatedSqlNode is null. Need to call #validate() first");
-    final RexBuilder rexBuilder = createRexBuilder();
+    final RexBuilderPlus rexBuilder = createRexBuilder();
     final RelOptCluster cluster =
         RelOptCluster.create(requireNonNull(planner, "planner"),
             rexBuilder);
@@ -312,7 +313,7 @@ public class PlannerImpl implements Planner, ViewExpander {
         createCatalogReader().withSchemaPath(schemaPath);
     final SqlValidator validator = createSqlValidator(catalogReader);
 
-    final RexBuilder rexBuilder = createRexBuilder();
+    final RexBuilderPlus rexBuilder = createRexBuilder();
     final RelOptCluster cluster = RelOptCluster.create(planner, rexBuilder);
     final SqlToRelConverter.Config config =
         sqlToRelConverterConfig.withTrimUnusedFields(false);
@@ -365,8 +366,8 @@ public class PlannerImpl implements Planner, ViewExpander {
   }
 
   // RexBuilder is stateless; no need to store one
-  private RexBuilder createRexBuilder() {
-    return new RexBuilder(getTypeFactory());
+  private RexBuilderPlus createRexBuilder() {
+    return new RexBuilderPlus(getTypeFactory());
   }
 
   @Override public JavaTypeFactory getTypeFactory() {

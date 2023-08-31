@@ -59,26 +59,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
-import org.apache.calcite.rex.LogicVisitor;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexCorrelVariable;
-import org.apache.calcite.rex.RexExecutor;
-import org.apache.calcite.rex.RexExecutorImpl;
-import org.apache.calcite.rex.RexFieldAccess;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
-import org.apache.calcite.rex.RexLocalRef;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexOver;
-import org.apache.calcite.rex.RexProgram;
-import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.rex.RexSqlStandardConvertletTable;
-import org.apache.calcite.rex.RexSubQuery;
-import org.apache.calcite.rex.RexToSqlNodeConverter;
-import org.apache.calcite.rex.RexToSqlNodeConverterImpl;
-import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.rex.*;
 import org.apache.calcite.runtime.CalciteContextException;
 import org.apache.calcite.runtime.PairList;
 import org.apache.calcite.schema.ModifiableView;
@@ -2649,7 +2630,7 @@ public abstract class RelOptUtil {
   public static Map<Integer, RexNode> getColumnConstraints(
       ModifiableView modifiableViewTable, RelDataType targetRowType,
       RelDataTypeFactory typeFactory) {
-    final RexBuilder rexBuilder = new RexBuilder(typeFactory);
+    final RexBuilderPlus rexBuilder = new RexBuilderPlus(typeFactory);
     final RexNode constraint =
         modifiableViewTable.getConstraint(rexBuilder, targetRowType);
     final Map<Integer, RexNode> projectMap = new HashMap<>();

@@ -36,25 +36,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelDataTypeSystemImpl;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexCorrelVariable;
-import org.apache.calcite.rex.RexDynamicParam;
-import org.apache.calcite.rex.RexFieldAccess;
-import org.apache.calcite.rex.RexFieldCollation;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
-import org.apache.calcite.rex.RexLocalRef;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexOver;
-import org.apache.calcite.rex.RexPatternFieldRef;
-import org.apache.calcite.rex.RexProgram;
-import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.rex.RexSubQuery;
-import org.apache.calcite.rex.RexUnknownAs;
-import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexWindow;
-import org.apache.calcite.rex.RexWindowBound;
+import org.apache.calcite.rex.*;
 import org.apache.calcite.sql.JoinType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlBasicCall;
@@ -157,8 +139,8 @@ public abstract class SqlImplementor {
 
   /** Private RexBuilder for short-lived expressions. It has its own
    * dedicated type factory, so don't trust the types to be canonized. */
-  final RexBuilder rexBuilder =
-      new RexBuilder(new SqlTypeFactoryImpl(RelDataTypeSystemImpl.DEFAULT));
+  final RexBuilderPlus rexBuilder =
+      new RexBuilderPlus(new SqlTypeFactoryImpl(RelDataTypeSystemImpl.DEFAULT));
 
   protected SqlImplementor(SqlDialect dialect) {
     this.dialect = requireNonNull(dialect, "dialect");

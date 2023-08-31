@@ -32,24 +32,7 @@ import org.apache.calcite.linq4j.tree.ParameterExpression;
 import org.apache.calcite.linq4j.tree.Primitive;
 import org.apache.calcite.linq4j.tree.Statement;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexCallBinding;
-import org.apache.calcite.rex.RexCorrelVariable;
-import org.apache.calcite.rex.RexDynamicParam;
-import org.apache.calcite.rex.RexFieldAccess;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
-import org.apache.calcite.rex.RexLocalRef;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexOver;
-import org.apache.calcite.rex.RexPatternFieldRef;
-import org.apache.calcite.rex.RexProgram;
-import org.apache.calcite.rex.RexRangeRef;
-import org.apache.calcite.rex.RexSubQuery;
-import org.apache.calcite.rex.RexTableInputRef;
-import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexVisitor;
+import org.apache.calcite.rex.*;
 import org.apache.calcite.runtime.SpatialTypeFunctions;
 import org.apache.calcite.schema.FunctionContext;
 import org.apache.calcite.sql.SqlIntervalQualifier;
@@ -196,7 +179,7 @@ public class RexToLixTranslator implements RexVisitor<RexToLixTranslator.Result>
       }
     }
     return new RexToLixTranslator(program, typeFactory, root, inputGetter,
-        list, staticList, new RexBuilder(typeFactory), conformance,  null)
+        list, staticList, new RexBuilderPlus(typeFactory), conformance,  null)
         .setCorrelates(correlates)
         .translateList(program.getProjectList(), storageTypes);
   }
@@ -216,7 +199,7 @@ public class RexToLixTranslator implements RexVisitor<RexToLixTranslator.Result>
       PhysType inputPhysType, PhysType outputPhysType) {
     final RexToLixTranslator translator =
         new RexToLixTranslator(null, typeFactory, root, null, list,
-            null, new RexBuilder(typeFactory), conformance, null);
+            null, new RexBuilderPlus(typeFactory), conformance, null);
     return translator
         .translateTableFunction(rexCall, inputEnumerable, inputPhysType,
             outputPhysType);
@@ -228,7 +211,7 @@ public class RexToLixTranslator implements RexVisitor<RexToLixTranslator.Result>
       SqlConformance conformance) {
     final ParameterExpression root = DataContext.ROOT;
     return new RexToLixTranslator(null, typeFactory, root, inputGetter, list,
-        null, new RexBuilder(typeFactory), conformance, null);
+        null, new RexBuilderPlus(typeFactory), conformance, null);
   }
 
   Expression translate(RexNode expr) {
@@ -932,7 +915,7 @@ public class RexToLixTranslator implements RexVisitor<RexToLixTranslator.Result>
     final ParameterExpression root = DataContext.ROOT;
     RexToLixTranslator translator =
         new RexToLixTranslator(program, typeFactory, root, inputGetter, list,
-            null, new RexBuilder(typeFactory), conformance, null);
+            null, new RexBuilderPlus(typeFactory), conformance, null);
     translator = translator.setCorrelates(correlates);
     return translator.translate(
         condition,

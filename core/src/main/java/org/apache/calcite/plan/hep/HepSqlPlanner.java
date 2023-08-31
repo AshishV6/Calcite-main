@@ -1,7 +1,5 @@
 package org.apache.calcite.plan.hep;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
@@ -10,35 +8,41 @@ import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.prepare.CalciteCatalogReader;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
+
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.CoreRules;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlOperatorTable;
-import org.apache.calcite.sql.SqlStdOperatorTablePlus;
+import org.apache.calcite.rex.RexBuilderPlus;
+import org.apache.calcite.schema.SchemaCustom;
+import org.apache.calcite.sql.*;
+import org.apache.calcite.sql.parser.SqlAbstractParserImpl;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
+
 import org.apache.calcite.sql.parser.SqlParserPlus;
 import org.apache.calcite.sql.parser.impl.SqlParserImpl;
 import org.apache.calcite.sql.type.SqlTypeCoercionRule;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.sql.util.ChainedSqlOperatorTable;
+import org.apache.calcite.sql.validate.SqlNameMatcher;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 import org.apache.calcite.util.Pair;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import org.codehaus.commons.nullanalysis.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.*;
+import javax.annotation.Nullable;
 
 
 public class HepSqlPlanner extends SqlParserPlus
@@ -68,16 +72,19 @@ public class HepSqlPlanner extends SqlParserPlus
 //CoreRules.JOIN_SUB_QUERY_TO_CORRELATE);
   private final SqlValidator m_validator;
   private final SqlToRelConverter m_converter;
-  private final org.apache.calcite.sql.parser.SqlParser.Config m_parserConfig;
-
-  //    protected static final Logger s_logger = LoggerFactory.getLogger(QueryProcessor.class);
-  private final CalciteSchema m_schema;
-
+  private final SqlParser.Config m_parserConfig;
+  private final SchemaCustom m_schema;
   private static RelOptCluster m_cluster = null;
+  public static final RelOptTable.ViewExpander NOOP_EXPANDER = (type, query, schema, path) -> null;
+
+  protected static  SqlAbstractParserImpl parser;
+
+
 
   public HepSqlPlanner(CalciteConnectionConfig config, RelOptCluster cluster, SqlValidator validator,
-      SqlToRelConverter converter, CalciteSchema schema)
+      SqlToRelConverter converter, SchemaCustom schema, SqlAbstractParserImpl parser)
   {
+    super(parser);
     m_validator = validator;
     m_converter = converter;
     m_parserConfig = SqlParser.config()
@@ -89,25 +96,36 @@ public class HepSqlPlanner extends SqlParserPlus
 
     m_cluster = cluster;
     m_schema = schema;
+    this.parser = parser;
   }
 
-  public static HepSqlPlanner create(CalciteSchema rootSchema, String defaultCatalog, String defaultSchema)
+  public static SqlParserPlus create(SchemaCustom rootSchema, String defaultSchema)
   {
-//        rootSchema = rootSchema.getClone();
     RelDataTypeFactory typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
 
     Properties configProperties = new Properties();
     configProperties.put(CalciteConnectionProperty.CASE_SENSITIVE.camelName(), Boolean.FALSE.toString());
     configProperties.put(CalciteConnectionProperty.UNQUOTED_CASING.camelName(), Casing.UNCHANGED.toString());
     configProperties.put(CalciteConnectionProperty.QUOTED_CASING.camelName(), Casing.UNCHANGED.toString());
+
     CalciteConnectionConfig config = new CalciteConnectionConfigImpl(configProperties);
 
-    CalciteSchema rootCalciteSchema = CalciteSchema.createRootSchema(false, false, rootSchema.getName(),
-        rootSchema.schema);
+    CalciteSchema rootCalciteSchema = CalciteSchema.createRootSchema(false, false, rootSchema.getSchemaName(),
+        rootSchema);
     CalciteCatalogReader catalogReader = new CalciteCatalogReader(rootCalciteSchema,
-        ImmutableList.of(defaultCatalog, defaultSchema), typeFactory, config);
+        ImmutableList.of(defaultSchema), typeFactory, config);
 
-    SqlOperatorTable operatorTable = new ChainedSqlOperatorTable(ImmutableList.of(SqlStdOperatorTablePlus.instance()));
+    SqlOperatorTable operatorTable = new SqlOperatorTable() {
+      @Override
+      public void lookupOperatorOverloads(SqlIdentifier opName, @org.checkerframework.checker.nullness.qual.Nullable SqlFunctionCategory category, SqlSyntax syntax, List<SqlOperator> operatorList, SqlNameMatcher nameMatcher) {
+
+      }
+
+      @Override
+      public List<SqlOperator> getOperatorList() {
+        return null;
+      }
+    };
 
     SqlValidator.Config validatorConfig = SqlValidator.Config.DEFAULT.withLenientOperatorLookup(
             config.lenientOperatorLookup())
@@ -145,13 +163,13 @@ public class HepSqlPlanner extends SqlParserPlus
     mapOfHEPPrograms.add(Pair.of(buildHEPProgram(ImmutableList.of(CoreRules.FILTER_MERGE)),
         createPlannerPhase(ImmutableList.of(CoreRules.FILTER_MERGE), Integer.MAX_VALUE)));
 
-    RelOptCluster cluster = RelOptCluster.create(mapOfHEPPrograms.get(0).right, new RexBuilder(typeFactory));
-    //cluster.setMetadataProvider(MetadataProvider.build(rootSchema, defaultCatalog, defaultSchema, null));
+    RelOptCluster cluster = RelOptCluster.create(mapOfHEPPrograms.get(0).right, new RexBuilderPlus(typeFactory));
+//    cluster.setMetadataProvider(MetadataProvider.build(rootSchema, defaultCatalog, defaultSchema, null));
 
-    SqlToRelConverter converter = new SqlToRelConverter(null, validator, catalogReader, cluster,
+    SqlToRelConverter converter = new SqlToRelConverter( NOOP_EXPANDER, validator, catalogReader, cluster,
         StandardConvertletTable.INSTANCE);
 
-    return new HepSqlPlanner(config, cluster, validator, converter, rootSchema);
+    return new HepSqlPlanner(config, cluster, validator, converter, rootSchema, parser);
   }
 
   @NotNull
@@ -231,7 +249,7 @@ public class HepSqlPlanner extends SqlParserPlus
     return Pair.of(Pair.of(false, null), optimizedNode);
   }
 
-  @Override
+
   public RelNode getOptimizedRelNode(SqlNode sqlNode)
   {
     RelNode converted = convert(sqlNode);
@@ -245,20 +263,20 @@ public class HepSqlPlanner extends SqlParserPlus
     return new HepProgramBuilder().addRuleCollection(ruleSet).build();
   }
 
-  @Override
+
   protected SqlNode parseX(String query) throws SqlParseException
   {
-    return org.apache.calcite.sql.parser.SqlParser.create(query, m_parserConfig).parseStmt();
+    return SqlParser.create(query, m_parserConfig).parseStmt();
   }
 
-  @Override
-  protected CalciteSchema getSchema()
+
+  protected SchemaCustom getSchema()
   {
     return m_schema;
   }
 
-  @Override
-  public RexBuilder getRexBuilder()
+
+  public RexBuilderPlus getRexBuilder()
   {
     return m_converter.getRexBuilder();
   }

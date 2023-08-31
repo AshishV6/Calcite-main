@@ -75,23 +75,7 @@ import org.apache.calcite.rel.stream.LogicalDelta;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexCorrelVariable;
-import org.apache.calcite.rex.RexDynamicParam;
-import org.apache.calcite.rex.RexFieldAccess;
-import org.apache.calcite.rex.RexFieldCollation;
-import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexOver;
-import org.apache.calcite.rex.RexPatternFieldRef;
-import org.apache.calcite.rex.RexRangeRef;
-import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.rex.RexSubQuery;
-import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexWindowBound;
-import org.apache.calcite.rex.RexWindowBounds;
+import org.apache.calcite.rex.*;
 import org.apache.calcite.runtime.PairList;
 import org.apache.calcite.schema.ColumnStrategy;
 import org.apache.calcite.schema.ModifiableTable;
@@ -255,7 +239,7 @@ public class SqlToRelConverter {
   //~ Instance fields --------------------------------------------------------
 
   public final @Nullable SqlValidator validator;
-  protected final RexBuilder rexBuilder;
+  protected final RexBuilderPlus rexBuilder;
   protected final Prepare.CatalogReader catalogReader;
   protected final RelOptCluster cluster;
   private SubQueryConverter subQueryConverter;
@@ -308,7 +292,7 @@ public class SqlToRelConverter {
       SqlValidator validator,
       Prepare.CatalogReader catalogReader,
       RelOptPlanner planner,
-      RexBuilder rexBuilder,
+      RexBuilderPlus rexBuilder,
       SqlRexConvertletTable convertletTable) {
     this(viewExpander, validator, catalogReader,
         RelOptCluster.create(planner, rexBuilder), convertletTable, SqlToRelConverter.config());
@@ -380,7 +364,7 @@ public class SqlToRelConverter {
   /**
    * Returns the row-expression builder.
    */
-  public RexBuilder getRexBuilder() {
+  public RexBuilderPlus getRexBuilder() {
     return rexBuilder;
   }
 

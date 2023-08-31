@@ -86,7 +86,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>Some common literal values (NULL, TRUE, FALSE, 0, 1, '') are cached.
  */
-public class RexBuilder {
+public abstract class RexBuilder {
   /**
    * Special operator that accesses an unadvertised field of an input record.
    * This operator cannot be used in SQL queries; it is introduced temporarily
@@ -255,6 +255,8 @@ public class RexBuilder {
       List<RexNode> exprs) {
     return new RexCall(returnType, op, exprs);
   }
+
+  public abstract RexBuilderPlus getRexBuilder();
 
   /**
    * Creates a call with an array of arguments.
